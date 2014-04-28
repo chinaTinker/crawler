@@ -7,6 +7,10 @@ var client      = require("http");
 var urlParser   = require("url");
 var config      = require("../conf/config.json");
 var linkParser  = require("../parser/achorParser.js");
+var Buffer      = require('buffer').Buffer;
+var iconv 			= require('iconv-lite');
+var BufferHelper = require('bufferhelper');
+var urlencode   = require('urlencode');
 
 var clawer = {
 	maxDepth:       config.depth || 3,
@@ -23,12 +27,24 @@ clawer.fetch = function(url, depth) {
 		return false;
 	}
 	
-	var request = client.get(url, function(res){
-		res.setEncoding(clawer.charset);
+	//TODO	
+	var actualUrl = url + '&kw=' + urlencode('肺癌', 'GBK');
+	console.log(actualUrl);
 
-		res.on('data', clawer.doParse);
+	var request = client.get(actualUrl, function(res){
+		var bufferhelper = new BufferHelper();
 
-		res.on('data', function(data){
+		res.on('data', function(chuck) {
+			bufferhelper.concat(chuck);
+		});
+
+		res.on('end', function() {
+			var data = iconv.decode(bufferhelper.toBuffer(), 'GBK');
+			clawer.doParse(data);
+		});
+
+		res.on('end', function(){
+			var data = iconv.decode(bufferhelper.toBuffer(), 'GBK');
 			linkParser.parse(data, depth, clawer.fetch);
 		});
 

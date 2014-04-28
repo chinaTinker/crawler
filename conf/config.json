@@ -1,8 +1,20 @@
 {
 	"urls": [
-		"http://www.haodf.com/"
+		"http://so.haodf.com/index/search?type=flow"
 	],
 
 	"depth": 2,
-	"charset": "utf8"
+	"charset": "utf8",
+
+	"mq": {
+		"host": "127.0.0.1",
+		"port": 5672,
+		"exchange": "#",
+		"queue": "tinker_test_queue"
+	},
+
+	"redis": {
+		"host": "127.0.0.1",
+		"port": 6379
+	}
 }
