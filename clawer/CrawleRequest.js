@@ -7,8 +7,8 @@
  */
 
 var config = require('../conf/config.json');
-var MQClinet = require('../helper/mqClient.js');
-var mqClient = new MQClient();
+var MQHelper = require('../helper/mqClientHelper.js');
+var mqClient = MQHelper.getClient();
 
 var CrawleRequest = function(count, words, categarory) {
 	this.count = count;
