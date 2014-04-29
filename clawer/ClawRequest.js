@@ -10,7 +10,7 @@ var config = require('../conf/config.json');
 var MQHelper = require('../helper/mqClientHelper.js');
 var mqClient = MQHelper.getClient();
 
-var CrawleRequest = function(count, words, categarory) {
+var ClawRequest = function(count, words, categarory) {
 	this.count = count;
 	this.words = words;
 	this.categarory = categarory;
@@ -19,7 +19,7 @@ var CrawleRequest = function(count, words, categarory) {
 /**
  * parse the request to job tasks
  */
-CrawleRequest.prototype.generateTasks = function() {
+ClawRequest.prototype.generateTasks = function() {
 	for(var i = 0, len = config.urls.length; i < len; i++) {
 		var crrUrl = config.urls[i];
 
@@ -40,4 +40,4 @@ CrawleRequest.prototype.generateTasks = function() {
 	}
 };
 
-module.exports = CrawleRequest;
+module.exports = ClawRequest;
