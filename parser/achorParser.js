@@ -11,17 +11,17 @@ var cache      = require("../helper/cache.js");
 var achorParser = {};
 
 achorParser.parse = function(html, depth, follower){
+	var urls = [];
+
 	if(!!html && html != ""){
 		var parser = new htmlParser.Parser({
 
 			onopentag: function(tagName, attrs){
 				if(tagName === "a" && urlHelper.isValidUrl(attrs.href)){
 					var crrurl = attrs.href;
-					
 					cache.add(crrurl);
-
-					follower(crrurl, depth + 1);
-				}
+					urls.push(crrurl);
+				} 
 			}
 		});
 
@@ -30,6 +30,8 @@ achorParser.parse = function(html, depth, follower){
 	}else {
 		console.log("achorParser: html is null");
 	}
+
+	return urls;
 };
 
 

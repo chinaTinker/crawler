@@ -13,7 +13,7 @@ urlHelper.isValidUrl = function(url) {
 		return false;
 	}
 	
-	return this.isIgnore(url) && this.isExisted(url);
+	return !this.isIgnore(url) && !this.isExisted(url);
 };
 
 /** check if need ignore */

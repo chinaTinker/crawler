@@ -1,9 +1,10 @@
 /**
  * cache, mainly keep the urls parsed
  * 
+ * FIXME, use more effective algrithm 
+ *
  * Tinker 2014-3-6
  */
-
 var cache = [];
 
 cache.add = function(url){

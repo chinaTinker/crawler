@@ -3,91 +3,73 @@
 *
 * Tinker 2014-3-6 
 */
-var client      = require("http");
-var urlParser   = require("url");
-var config      = require("../conf/config.json");
-var linkParser  = require("../parser/achorParser.js");
-var Buffer      = require('buffer').Buffer;
-var iconv 			= require('iconv-lite');
+var http         = require("http");
+var linkParser   = require("../parser/achorParser.js");
+var iconv 			 = require('iconv-lite');
 var BufferHelper = require('bufferhelper');
-var urlencode   = require('urlencode');
+var urlencode    = require('urlencode');
+var events       = require('events');
+var util         = require('util');
 
-var clawer = {
-	maxDepth:       config.depth || 3,
-	startDepth:     0,
-	charset: 			  config.charset || "utf8",
-	contentParsers: []
+var Clawer = function(httpOpts) {
+	this.options = httpOpts;
+	this.bufferHelper = new BufferHelper();
+	events.EventEmitter.call(this);
+
+	this.on('ready', this._isMoreLinks);
 };
 
-/* web data fetch operation */
-clawer.fetch = function(url, depth) {
-	var crrDepth = depth || 1;
+util.inherits(Clawer, events.EventEmitter);
 
-	if(this.maxDepth < crrDepth){
-		return false;
-	}
+/**
+ * set fire to the server
+ * fetch the page content
+ * and prepare the event handler
+ */
+Clawer.prototype.fetch = function() {
+	console.log(this.options);
+
+	var _this = this;
+	var request = http.request(this.options, function(resp) {
+		resp.on('error', function(e) {
+			console.log(e);
+			request.abort();
+			_this.emit('error', e);
+		});
+
+		resp.on('end', function() {
+			var data = _this.bufferHelper.toBuffer().toString();
+			_this.emit('ready', data);
+		});
+
+		resp.on('data', function(chunck) {
+			_this.bufferHelper.concat(chunck);
+		});
+	});
 	
-	//TODO	
-	var actualUrl = url + '&kw=' + urlencode('肺癌', 'GBK');
-	console.log(actualUrl);
-
-	var request = client.get(actualUrl, function(res){
-		var bufferhelper = new BufferHelper();
-
-		res.on('data', function(chuck) {
-			bufferhelper.concat(chuck);
-		});
-
-		res.on('end', function() {
-			var data = iconv.decode(bufferhelper.toBuffer(), 'GBK');
-			clawer.doParse(data);
-		});
-
-		res.on('end', function(){
-			var data = iconv.decode(bufferhelper.toBuffer(), 'GBK');
-			linkParser.parse(data, depth, clawer.fetch);
-		});
-
+	request.setTimeout(30000, function() {
+		this.emit('error', 'timeout');
 	});
 
-	request.on("error", function(e){
-		console.error(e.message);
-	});
+	request.on('error', function(e) {
+		request.abort();
+		_this.emit('error', e);
+	})
 
+	request.end();
 };
 
 /**
- * use the parsers chains to parse the content
+ * parse the all linkers from data
  */
-clawer.doParse = function(data) {
-	if(data && data.length > 0){
-		for(var i = 0, len = clawer.contentParsers.length; i < len; i++){
-			clawer.contentParsers[i](data);
+Clawer.prototype._isMoreLinks = function(data) {
+	if(data && data.length > 0) {
+		var urls = linkParser.parse(data);
+
+		if(urls && urls.length > 0) {
+			this.emit('moreLinks', urls);
 		}
 	}
 };
 
-clawer.addParser = function(parser){
-	clawer.contentParsers.push(parser);
-};
-
-clawer.requestOptions = function(url){
-	var opts = urlParser.parse(url);
-
-	return {
-		"hostname": opts.host,
-		"port":   80,
-		"method": "get",
-		"path":   opts.path,
-		"header": {
-			"scheme":  "https",
-			"version": "HTTP/1.1",
-			"accept":  "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-			"accept-encoding": "gzip,deflate,sdch",
-			"accept-language": "zh-CN,zh;q=0.8,en;q=0.6,zh-TW;q=0.4",
-			"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1871.0 Safari/537.36"
-		}
-	}
-}
-
-module.exports = clawer;
+module.exports = Clawer;
