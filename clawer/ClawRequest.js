@@ -20,6 +20,7 @@ var ClawRequest = function(count, words, categarory) {
  * parse the request to job tasks
  */
 ClawRequest.prototype.generateTasks = function() {
+	var tasks = [];
 	for(var i = 0, len = config.urls.length; i < len; i++) {
 		var crrUrl = config.urls[i];
 
@@ -27,17 +28,17 @@ ClawRequest.prototype.generateTasks = function() {
 		 * if the crrCount >= targetCount
 		 * this task will be oblished
 		 */
-		var subTask = {
+		tasks.push({
 			url:         crrUrl,
 			words:       this.words,
 			targetCount: this.count,
 			crrCount:    0,
 			depth:       0,
 			categarory:  this.categarory
-		};
-
-		mqClient.publish(subTask);
+		});
 	}
+
+	return tasks;
 };
 
 module.exports = ClawRequest;
