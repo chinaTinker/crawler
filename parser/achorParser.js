@@ -1,6 +1,8 @@
 /*
  * parse the html, and get the achor links
- *
+ * 
+ * TODO --> need a more effective algorithm
+ * 
  * Tinker 2014-3-6
  */
 
@@ -10,7 +12,7 @@ var cache      = require("../helper/cache.js");
 
 var achorParser = {};
 
-achorParser.parse = function(html, depth, follower){
+achorParser.parse = function(html, depth){
 	var urls = [];
 
 	if(!!html && html != ""){

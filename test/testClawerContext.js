@@ -1,17 +1,18 @@
 var ClawRequest = require('../clawer/ClawRequest.js');
 var Context = require('../clawer/ClawerContext.js');
+var urlParser = require('urlparser');
 
 var clawerHelper = {
 	buildHttpOptions: function(task) {
 		return {
-			hostname: task.url,
+			host: task.url,
 			port: 80,
 			path: '/'
 		}
 	}, 
 
 	parseData: function(data) {
-		console.log(data);
+		//console.log(data);
 	}
 };
 

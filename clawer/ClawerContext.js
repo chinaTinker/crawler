@@ -14,6 +14,7 @@ var Q        = require('q');
 var ClawerContext = module.exports = function ClawerContext(clawerHelper) {
 	this.clawerHelper = clawerHelper;
 	this.requests = [];
+	this.currentTask = null;
 
 	events.EventEmitter.call(this);
 };
@@ -37,13 +38,19 @@ ClawerContext.prototype.fire = function() {
 
 ClawerContext.prototype._fireOne = function() {
 	if(this.requests && this.requests.length > 0) {
-		this.emit('fire', this.requests.pop());
+		if(!this._updateCurrentTask(this.requests.pop())) {
+			this.emit('fire', this.currentTask);
+		} else {
+			this.emit('ok');
+		}
 	} else {
 		this.emit('over');
 	}
 };
 
 ClawerContext.prototype._dealTask = function(task) {
+	console.log('now, I will claw page: ' + task.url);
+
 	var _this = this;
 
 	var deffered = Q.defer();
@@ -67,8 +74,10 @@ ClawerContext.prototype._dealTask = function(task) {
 	clawer.fetch();
 
 	Q.all([deffered.promise, linkDeff.promise])
-	 .done(function(resolved) {
+	 .then(function(resolved) {
 	   if(resolved && resolved.length > 0) {
+	     _this.currentTask.count++;
+
 	     var data = resolved[0];
 	     _this._dealData(data);
 	     _this.clawerHelper.parseData(data);
@@ -78,15 +87,16 @@ ClawerContext.prototype._dealTask = function(task) {
 	     	 _this._dealLinks(links);
 	     }
 	   }
+	 }).done(function() {
+	 		_this.emit('ok');
 	 });
-
-	this.emit('ok');
 };
 
 /** save the data into db */
 ClawerContext.prototype._dealData = function(data) {
 	//TODO
-}
+	console.log('ok!  ok! I will save data into redis!!');
+};
 
 /**
  * need check if there are enough data 
@@ -96,7 +106,49 @@ ClawerContext.prototype._dealData = function(data) {
  * and then, update the task
  */
 ClawerContext.prototype._dealLinks = function(links) {
-	console.log(links);
-	//TODO
-}
+	if(links && links.length > 0) {
+		for(var i = 0, len = links.length; i < len; i++) {
+			var newTask = {};
+			newTask.url         = links[i];
+			newTask.count       = this.currentTask.count;
+			newTask.targetCount = this.currentTask.targetCount;
+			newTask.depth       = this.currentTask.depth + 1;
+			newTask.targetDepth = this.currentTask.targetDepth;
+			newTask.words       = this.currentTask.words;
+			newTask.requestId   = this.currentTask.requestId;
+			newTask.categarory  = this.currentTask.categarory;
+
+			this.requests.push(newTask);
+		}
+	}
+};
+
+/**
+ * Every time a new task poped from tasks array,
+ * I need to update the current task to new url,
+ * and check the current request whether that is 
+ * satisfied.
+ *
+ * If satisfied (true), pop next task else fire away
+ * unitl a new ClawRequest comes.
+ *
+ * Here, satisfied means that, current get page count
+ * is greater than target count or the page depth greater
+ * than the garget depth
+ */
+ClawerContext.prototype._updateCurrentTask = function(newTask) {
+	var isSatisfied = false;
+	if(this.currentTask == null || this.currentTask.requestId != newTask.requestId) {
+		this.currentTask = newTask;
+	} else {
+		this.currentTask.url = newTask.url;
+
+		isSatisfied = (
+			this.currentTask.count >= this.currentTask.targetCount || 
+			this.currentTask.depth >= this.currentTask.targetDepth
+		);
+	}
+
+	return isSatisfied;
+};
 

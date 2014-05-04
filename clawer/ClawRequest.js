@@ -5,15 +5,17 @@
  *  Tinker
  *  2014-4-25
  */
-
+var uuid = require('node-uuid');
 var config = require('../conf/config.json');
 var MQHelper = require('../helper/mqClientHelper.js');
 var mqClient = MQHelper.getClient();
 
-var ClawRequest = function(count, words, categarory) {
+var ClawRequest = function(count, depth, words, categarory) {
 	this.count = count;
+	this.depth = depth;
 	this.words = words;
 	this.categarory = categarory;
+	this.requestId = uuid.v1();
 };
 
 /**
@@ -24,15 +26,13 @@ ClawRequest.prototype.generateTasks = function() {
 	for(var i = 0, len = config.urls.length; i < len; i++) {
 		var crrUrl = config.urls[i];
 
-		/*
-		 * if the crrCount >= targetCount
-		 * this task will be oblished
-		 */
 		tasks.push({
+			requestId:  this.requestId,
 			url:         crrUrl,
 			words:       this.words,
 			targetCount: this.count,
 			crrCount:    0,
+			targetDepth: this.depth,
 			depth:       0,
 			categarory:  this.categarory
 		});
