@@ -16,5 +16,13 @@
 	"redis": {
 		"host": "127.0.0.1",
 		"port": 6379
+	},
+
+	"mysql": {
+		"host": "127.0.0.1",
+		"port": 3306,
+		"database": "spider",
+		"user": "root",
+		"password": "12345"
 	}
 }

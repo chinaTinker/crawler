@@ -38,7 +38,14 @@ Clawer.prototype.fetch = function() {
 		});
 
 		resp.on('end', function() {
-			var data = _this.bufferHelper.toBuffer().toString();
+			var buffer = _this.bufferHelper.toBuffer();
+			var data = buffer.toString();
+
+			if(_this.options.charset) {
+				data = iconv.decode(buffer, _this.options.charset)
+			}
+
+			_this.bufferHelper.empty();
 			_this.emit('ready', data);
 		});
 

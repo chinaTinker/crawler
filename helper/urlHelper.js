@@ -37,7 +37,9 @@ urlHelper.isIgnore = function(url){
  * 2. if step.1 is failed ,check db 
  */
 urlHelper.isExisted = function(url){
-	return this.isInCache(url) || this.isInDB(url);
+	//return this.isInCache(url) || this.isInDB(url);
+	//TODO
+	return false;
 };
 
 /** check the url if it has setted in cache(array: links) */

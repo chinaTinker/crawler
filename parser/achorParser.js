@@ -21,7 +21,7 @@ achorParser.parse = function(html, depth){
 			onopentag: function(tagName, attrs){
 				if(tagName === "a" && urlHelper.isValidUrl(attrs.href)){
 					var crrurl = attrs.href;
-					cache.add(crrurl);
+					//cache.add(crrurl);
 					urls.push(crrurl);
 				} 
 			}

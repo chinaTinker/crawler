@@ -108,17 +108,20 @@ ClawerContext.prototype._dealData = function(data) {
 ClawerContext.prototype._dealLinks = function(links) {
 	if(links && links.length > 0) {
 		for(var i = 0, len = links.length; i < len; i++) {
-			var newTask = {};
-			newTask.url         = links[i];
-			newTask.count       = this.currentTask.count;
-			newTask.targetCount = this.currentTask.targetCount;
-			newTask.depth       = this.currentTask.depth + 1;
-			newTask.targetDepth = this.currentTask.targetDepth;
-			newTask.words       = this.currentTask.words;
-			newTask.requestId   = this.currentTask.requestId;
-			newTask.categarory  = this.currentTask.categarory;
+			var crrlink = links[i];
+			if(this.clawerHelper.isFollow(crrlink)) {
+				var newTask = {};
+				newTask.url         = crrlink;
+				newTask.count       = this.currentTask.count;
+				newTask.targetCount = this.currentTask.targetCount;
+				newTask.depth       = this.currentTask.depth + 1;
+				newTask.targetDepth = this.currentTask.targetDepth;
+				newTask.words       = this.currentTask.words;
+				newTask.requestId   = this.currentTask.requestId;
+				newTask.categarory  = this.currentTask.categarory;
 
-			this.requests.push(newTask);
+				this.requests.push(newTask);
+			}
 		}
 	}
 };
